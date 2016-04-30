@@ -10,32 +10,6 @@ var renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
-var geometry = new THREE.BoxGeometry( 1, 1, 1);
-var material = new THREE.MeshFaceMaterial([
-  new THREE.MeshBasicMaterial({
-    color: 0x0ff000
-  }),
-  new THREE.MeshBasicMaterial({
-    color: 0x0ff000
-  }),
-  new THREE.MeshBasicMaterial({
-    color: 0x0ff000
-  }),
-  new THREE.MeshBasicMaterial({
-    color: 0x0ff000
-  }),
-  new THREE.MeshBasicMaterial({
-    color: 0x0ff000
-  }),
-  new THREE.MeshBasicMaterial({
-    color: 0x00ffff 
-  })
-]);
-var cube = new THREE.Mesh( geometry, material );
-
-camera.position.set(0, 700, 700)
-camera.lookAt(scene.position);
-
 var isDragging = false;
 var previousMousePosition = {
   x: 0,
@@ -44,12 +18,35 @@ var previousMousePosition = {
 
 var textMaterial = new THREE.MeshBasicMaterial({color: 0xb0bca7, overdraw: true})
 var textGeometry = new THREE.TextGeometry("Patrick Sullivan", {
-  font: font
+  font: font,
+  size: 40,
+  height: 15
 });
-textGeometry.computeBoundingBox()
+var textGeometry2 = new THREE.TextGeometry("Web Development Intern", {
+  font: font,
+  size: 20,
+  height: 10
+});
+textGeometry.computeBoundingBox();
+textGeometry2.computeBoundingBox();
+var textWidth = textGeometry.boundingBox.max.x-textGeometry.boundingBox.min.x;
+var textWidth2 = textGeometry2.boundingBox.max.x-textGeometry2.boundingBox.min.x;
+var textHeight2 = textGeometry.boundingBox.max.y-textGeometry.boundingBox.min.y;
+
 var textMesh = new THREE.Mesh(textGeometry, textMaterial);
-textMesh.position.x = -400;
-scene.add(textMesh);
+var textMesh2 = new THREE.Mesh(textGeometry2, textMaterial);
+textMesh.position.set(-0.5*textWidth,0,0);
+textMesh2.position.set(-0.5*textWidth2,-0.6*textHeight2,0);
+
+var meshGroup = [textMesh, textMesh2]
+var pivot = new THREE.Object3D();
+for (var i = 0; i < meshGroup.length; i++) {
+  pivot.add(meshGroup[i]);
+}
+scene.add(pivot);
+
+camera.position.set(-600,0,200);
+camera.lookAt(textMesh.position);
 
 $(renderer.domElement)
 .on('mousedown',
@@ -64,18 +61,18 @@ $(renderer.domElement)
       if(isDragging) {
         var deltaRotationQuaternion = new THREE.Quaternion()
         .setFromEuler(new THREE.Euler(
-          toRadians(deltaMove.y * 1),
+          0,
           toRadians(deltaMove.x * 1),
           0,
           'XYZ'
         ));
 
-        cube.quaternion.multiplyQuaternions(deltaRotationQuaternion, cube.quaternion);
+        pivot.quaternion.multiplyQuaternions(deltaRotationQuaternion, pivot.quaternion);
       }
 
       previousMousePosition = {
         x: e.offsetX,
-        y: e.offsetY
+        y: previousMousePosition.y
       };
     });
 
